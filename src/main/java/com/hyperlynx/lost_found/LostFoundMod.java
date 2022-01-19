@@ -56,7 +56,7 @@ public class LostFoundMod
             if (event.getEntityItem().getItem().hasCustomHoverName()) {
                 Optional<IItemHandler> world_hand = event.getEntityItem().level.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).resolve();
                 LOGGER.info("Just caught an item despawn. Slot count: " + world_hand.orElseThrow().getSlots());
-                if (world_hand.orElseThrow().getSlots() <= despawn_count) { //TODO: Might not work.
+                if (world_hand.orElseThrow().getSlots() <= despawn_count) {
                     despawn_count = 0; // loop back and start replacing stacks already occupied.
                 }
                     world_hand.orElseThrow().extractItem(despawn_count, 100, false); // remove anything already in the slot
@@ -69,24 +69,28 @@ public class LostFoundMod
     @SubscribeEvent
     public void onItemFished(ItemFishedEvent event){
         //Chance for any lost item fishing result to be rolled. TODO: Should be configurable!
-        double FISH_ITEM_CHANCE = 1;
+        double FISH_ITEM_CHANCE = 0.25;
         if(event.getEntity().getLevel().random.nextFloat() < FISH_ITEM_CHANCE){
             Optional<IItemHandler> world_hand = event.getEntity().getLevel().getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).resolve();
             int slot = -1;
-            LOGGER.info("Slot count: " + world_hand.orElseThrow().getSlots());
             for(int i = 0; i < world_hand.orElseThrow().getSlots(); i++){
-                LOGGER.info("Iterating to find item! i = " + i);
                 if(world_hand.orElseThrow().getStackInSlot(i) != ItemStack.EMPTY){
-                    LOGGER.info("Found!");
                     slot = i;
                     break;
                 }
             }
-            ItemStack found_item = world_hand.orElseThrow().extractItem(slot, 100, false);
-            ItemEntity found_item_entity = new ItemEntity(event.getEntity().level, event.getHookEntity().getX(), event.getHookEntity().getY(), event.getHookEntity().getZ(), found_item);
-            event.getEntity().getLevel().addFreshEntity(found_item_entity);
             if(slot >= 0) {
-                event.setCanceled(true); // Prevent normal fishing loot from appearing alongside the item.
+                ItemStack found_item = world_hand.orElseThrow().extractItem(slot, 100, false);
+                // Code ripped from vanilla fishing hook.
+                ItemEntity found_item_entity = new ItemEntity(event.getEntity().level, event.getHookEntity().getX(), event.getHookEntity().getY(), event.getHookEntity().getZ(), found_item);
+                double d0 = event.getPlayer().getX() - event.getHookEntity().getX();
+                double d1 = event.getPlayer().getY() - event.getHookEntity().getY();
+                double d2 = event.getPlayer().getZ() - event.getHookEntity().getZ();
+                double d3 = 0.1D;
+                found_item_entity.setDeltaMovement(d0 * 0.1D, d1 * 0.1D + Math.sqrt(Math.sqrt(d0 * d0 + d1 * d1 + d2 * d2)) * 0.08D, d2 * 0.1D);
+                event.getEntity().getLevel().addFreshEntity(found_item_entity);
+                // Prevent normal fishing loot from appearing alongside the item.
+                event.setCanceled(true);
             }
         }
     }
