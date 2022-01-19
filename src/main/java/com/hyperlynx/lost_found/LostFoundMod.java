@@ -16,6 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Optional;
+import java.util.Random;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(LostFoundMod.MODID)
@@ -55,15 +56,27 @@ public class LostFoundMod
         if(event.getEntityItem().level.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).isPresent()) {
             if (event.getEntityItem().getItem().hasCustomHoverName()) {
                 Optional<IItemHandler> world_hand = event.getEntityItem().level.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).resolve();
-                LOGGER.info("Just caught an item despawn. Slot count: " + world_hand.orElseThrow().getSlots());
                 if (world_hand.orElseThrow().getSlots() <= despawn_count) {
                     despawn_count = 0; // loop back and start replacing stacks already occupied.
                 }
+                    ItemStack caught_item = event.getEntityItem().getItem();
+                    degradeItem(caught_item, event.getEntityItem().level.random);
                     world_hand.orElseThrow().extractItem(despawn_count, 100, false); // remove anything already in the slot
-                    world_hand.orElseThrow().insertItem(despawn_count, event.getEntityItem().getItem(), false);
+                    world_hand.orElseThrow().insertItem(despawn_count, caught_item, false);
                 }
             }
         despawn_count++;
+    }
+
+    private void degradeItem(ItemStack in, Random r){ // Makes the itemstack worse somehow, as a penalty for losing it.
+        // TODO: Should be configurable!
+        if(r.nextFloat() < 0.4) {
+            if (in.getCount() > 1) {
+                in.setCount(in.getCount() - (int) Math.floor(r.nextFloat() * in.getCount()));
+            } else if (in.isDamageableItem()) {
+                in.hurt(r.nextInt(1, (in.getMaxDamage() - in.getDamageValue() - 20)), r, null);
+            }
+        }
     }
 
     @SubscribeEvent
