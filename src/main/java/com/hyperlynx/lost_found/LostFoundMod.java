@@ -44,7 +44,6 @@ public class LostFoundMod
 
         if(!event.getObject().isClientSide() && event.getObject().dimension().equals(Level.OVERWORLD)) {
             event.addCapability(WORLD_INVENTORY_KEY, WI);
-            LOGGER.info("Dimension is " + event.getObject().dimension());
         }
     }
 
