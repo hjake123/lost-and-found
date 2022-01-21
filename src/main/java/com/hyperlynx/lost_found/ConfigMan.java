@@ -7,7 +7,7 @@ public class ConfigMan {
     public static class Common {
         ForgeConfigSpec.BooleanValue protectNamedItems;
         ForgeConfigSpec.BooleanValue protectEnchantedItems;
-        ForgeConfigSpec.BooleanValue protectRareItems;
+        ForgeConfigSpec.BooleanValue protectTagItems;
         ForgeConfigSpec.DoubleValue itemFishChance;
         ForgeConfigSpec.DoubleValue itemDamagedChance;
         ForgeConfigSpec.DoubleValue itemDamageMultiplier;
@@ -20,8 +20,8 @@ public class ConfigMan {
                     .define("protectNamedItems", true);
             protectEnchantedItems = builder.comment("Catch items that are enchanted. [Default: true]")
                     .define("protectEnchantedItems", true);
-            protectRareItems = builder.comment("Catch items that have the tag 'lost_found:RareItem'. [Default: true]")
-                    .define("protectRareItems", true);
+            protectTagItems = builder.comment("Catch items that have the tag 'lost_found:must_save'. [Default: true]")
+                    .define("protectTagItems", true);
             builder.pop();
 
             builder.comment("Recovery Settings")

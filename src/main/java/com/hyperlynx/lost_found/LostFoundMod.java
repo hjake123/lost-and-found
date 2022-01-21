@@ -1,7 +1,10 @@
 package com.hyperlynx.lost_found;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.Tag;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
@@ -46,10 +49,10 @@ public class LostFoundMod
     }
 
     private boolean checkItemImportant(ItemStack itemStack){
-        return (itemStack.hasCustomHoverName() && ConfigMan.COMMON.protectNamedItems.get())
-                || (itemStack.isEnchanted() && ConfigMan.COMMON.protectEnchantedItems.get())
-                /*|| (itemStack.getItem().getTags().contains(Tags.Blocks.)) && ConfigMan.COMMON.protectRareItems.get()*/;
-        // TODO: Add rare item tag for things that should always be saved.
+        Tag<Item> mustSaveTag = ItemTags.bind("lost_found:must_save");
+        return itemStack.hasCustomHoverName() && ConfigMan.COMMON.protectNamedItems.get()
+                || itemStack.isEnchanted() && ConfigMan.COMMON.protectEnchantedItems.get()
+                || itemStack.is(mustSaveTag) && ConfigMan.COMMON.protectTagItems.get();
     }
 
     @SubscribeEvent
@@ -82,10 +85,9 @@ public class LostFoundMod
         if(event.getEntity().getLevel().getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).isPresent()) {
             if (event.getEntity().getLevel().random.nextFloat() < ConfigMan.COMMON.itemFishChance.get()) {
                 Optional<IItemHandler> world_hand = event.getEntity().getLevel().getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).resolve();
-                LOGGER.info("There were " +world_hand.orElseThrow().getSlots() + " slots when we found that item.");
-                int slot = -1;
 
                 //Scan the world inventory for lost items.
+                int slot = -1;
                 for (int i = 0; i < world_hand.orElseThrow().getSlots(); i++) {
                     if (world_hand.orElseThrow().getStackInSlot(i) != ItemStack.EMPTY) {
                         slot = i;
