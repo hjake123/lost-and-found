@@ -14,7 +14,12 @@ public class WorldInventory implements ICapabilityProvider {
 
     private final ItemStackHandler itemHandler = createHandler();
     private final LazyOptional<IItemHandler> handler = LazyOptional.of(() -> itemHandler);
-    private static final int MAX_SAVED_ITEMS = 10; //TODO: this should be configurable
+    private static int MAX_SAVED_ITEMS = 1;
+
+    public WorldInventory(int msi){
+        MAX_SAVED_ITEMS = msi;
+        itemHandler.setSize(MAX_SAVED_ITEMS);
+    }
 
     private ItemStackHandler createHandler(){
         return new ItemStackHandler(MAX_SAVED_ITEMS);
