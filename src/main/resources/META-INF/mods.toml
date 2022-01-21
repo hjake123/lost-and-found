@@ -34,7 +34,7 @@ logoFile="examplemod.png" #optional
 authors="hyperlynx" #optional
 # The description text for the mod (multi line!) (#mandatory)
 description='''
-Recover named items after they despawn by fishing!
+Recover important items after they despawn by fishing for them!
 '''
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
 [[dependencies.lost_found]] #optional
