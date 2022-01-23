@@ -20,8 +20,6 @@ public class ConfigMan {
                     .define("protectNamedItems", true);
             protectEnchantedItems = builder.comment("Catch items that are enchanted. [Default: true]")
                     .define("protectEnchantedItems", true);
-            protectTagItems = builder.comment("Catch items that have the tag 'lost_found:must_save'. [Default: true]")
-                    .define("protectTagItems", true);
             builder.pop();
 
             builder.comment("Recovery Settings")
@@ -32,8 +30,6 @@ public class ConfigMan {
                     .defineInRange("itemDamagedChance", 0.7, 0, 1);
             itemDamageMultiplier = builder.comment("Proportion of a lost item's durability to be removed in the worst case. [Default: 0.5]")
                     .defineInRange("itemDamageMultiplier", 0.5, 0, 0.99);
-            worldInventorySize = builder.comment("Number of items to be preserved in total. Excessively large values might cause lag when fishing. [Default: 20]")
-                            .defineInRange("worldInventorySize", 20, 1, Integer.MAX_VALUE);
             builder.pop();
         }
     }

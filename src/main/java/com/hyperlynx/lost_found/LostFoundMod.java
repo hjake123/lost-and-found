@@ -1,6 +1,7 @@
 package com.hyperlynx.lost_found;
 
-import net.minecraft.resources.ResourceLocation;
+import com.hyperlynx.lost_found.capabilities.WorldInventory;
+import com.hyperlynx.lost_found.capabilities.WorldInventoryAttacher;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.Tag;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -15,12 +16,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Optional;
 import java.util.Random;
 
 @Mod(LostFoundMod.MODID)
@@ -29,10 +27,6 @@ public class LostFoundMod
     private static final Logger LOGGER = LogManager.getLogger();
     public static final String MODID = "lost_found";
 
-    private static final ResourceLocation WORLD_INVENTORY_KEY = new ResourceLocation(MODID, "world_inv");
-
-    private int despawn_count = 0;
-
     public LostFoundMod() {
         MinecraftForge.EVENT_BUS.register(this);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigMan.commonSpec);
@@ -40,18 +34,15 @@ public class LostFoundMod
 
     @SubscribeEvent
     public void onACE(AttachCapabilitiesEvent<Level> event){
-        WorldInventory WI = new WorldInventory(ConfigMan.COMMON.worldInventorySize.get());
-
-        if(!event.getObject().isClientSide() && event.getObject().dimension().equals(Level.OVERWORLD)) {
-            event.addCapability(WORLD_INVENTORY_KEY, WI);
-        }
+        WorldInventoryAttacher.attach(event);
     }
 
     private boolean checkItemImportant(ItemStack itemStack){
         Tag<Item> mustSaveTag = ItemTags.bind("lost_found:must_save");
-        return itemStack.hasCustomHoverName() && ConfigMan.COMMON.protectNamedItems.get()
+        Tag<Item> noSaveTag = ItemTags.bind("lost_found:no_save");
+        return (itemStack.hasCustomHoverName() && ConfigMan.COMMON.protectNamedItems.get()
                 || itemStack.isEnchanted() && ConfigMan.COMMON.protectEnchantedItems.get()
-                || itemStack.is(mustSaveTag) && ConfigMan.COMMON.protectTagItems.get();
+                || itemStack.is(mustSaveTag)) && !itemStack.is(noSaveTag);
     }
 
     @SubscribeEvent
@@ -60,42 +51,26 @@ public class LostFoundMod
         degradeItem(caught_item, event.getEntityItem().level.random);
 
         // If there is a World Inventory, if it's important, capture the item into it.
-        if(event.getEntityItem().level.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).isPresent() && checkItemImportant(caught_item)) {
-            Optional<IItemHandler> world_hand = event.getEntityItem().level.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).resolve();
-            if (world_hand.orElseThrow().getSlots() <= despawn_count) {
-                despawn_count = 0; // loop back and start replacing stacks already occupied.
-            }
-                world_hand.orElseThrow().extractItem(despawn_count, 100, false); // remove anything already in the slot
-                world_hand.orElseThrow().insertItem(despawn_count, caught_item, false);
+        if(event.getEntityItem().level.getCapability(WorldInventory.INSTANCE).isPresent() && checkItemImportant(caught_item)) {
+            event.getEntityItem().level.getCapability(WorldInventory.INSTANCE).resolve().orElseThrow().addItem(caught_item);
         }
-        despawn_count++;
     }
 
     private void degradeItem(ItemStack in, Random r){
         // Hurts damageable items as a penalty for losing them.
         if (in.isDamageableItem() && r.nextFloat() < ConfigMan.COMMON.itemDamagedChance.get()) {
-                in.hurt(r.nextInt(0, (int)((in.getMaxDamage() - in.getDamageValue()) * ConfigMan.COMMON.itemDamageMultiplier.get())), r, null);
+            in.hurt(r.nextInt(0, (int)((in.getMaxDamage() - in.getDamageValue()) * ConfigMan.COMMON.itemDamageMultiplier.get())), r, null);
         }
     }
 
     @SubscribeEvent
     public void onItemFished(ItemFishedEvent event){
         //Chance for any lost item fishing result to be rolled.
-        if(event.getEntity().getLevel().getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).isPresent()) {
+        if(event.getEntity().getLevel().getCapability(WorldInventory.INSTANCE).isPresent()) {
             if (event.getEntity().getLevel().random.nextFloat() < ConfigMan.COMMON.itemFishChance.get()) {
-                Optional<IItemHandler> world_hand = event.getEntity().getLevel().getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).resolve();
+                ItemStack found_item = event.getEntity().getLevel().getCapability(WorldInventory.INSTANCE).resolve().orElseThrow().popItem();
 
-                //Scan the world inventory for lost items.
-                int slot = -1;
-                for (int i = 0; i < world_hand.orElseThrow().getSlots(); i++) {
-                    if (world_hand.orElseThrow().getStackInSlot(i) != ItemStack.EMPTY) {
-                        slot = i;
-                        break;
-                    }
-                }
-                if (slot >= 0) {
-                    ItemStack found_item = world_hand.orElseThrow().extractItem(slot, 100, false);
-
+                if(found_item != null) {
                     // Code ripped from vanilla fishing hook, spawns the item and launches it at the player like normal fishing.
                     ItemEntity found_item_entity = new ItemEntity(event.getEntity().level, event.getHookEntity().getX(), event.getHookEntity().getY(), event.getHookEntity().getZ(), found_item);
                     double d0 = event.getPlayer().getX() - event.getHookEntity().getX();
