@@ -3,6 +3,7 @@
   "values": [
     "minecraft:dragon_egg",
     "minecraft:nether_star",
-    "minecraft:music_disc_pigstep"
+    "#music_discs",
+    "minecraft:elytra"
   ]
 }
