@@ -7,11 +7,9 @@ public class ConfigMan {
     public static class Common {
         ForgeConfigSpec.BooleanValue protectNamedItems;
         ForgeConfigSpec.BooleanValue protectEnchantedItems;
-        ForgeConfigSpec.BooleanValue protectTagItems;
         ForgeConfigSpec.DoubleValue itemFishChance;
         ForgeConfigSpec.DoubleValue itemDamagedChance;
         ForgeConfigSpec.DoubleValue itemDamageMultiplier;
-        ForgeConfigSpec.IntValue worldInventorySize;
 
         Common(ForgeConfigSpec.Builder builder){
             builder.comment("Item Protection Settings")

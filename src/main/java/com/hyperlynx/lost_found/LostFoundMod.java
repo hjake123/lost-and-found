@@ -2,8 +2,9 @@ package com.hyperlynx.lost_found;
 
 import com.hyperlynx.lost_found.capabilities.WorldInventory;
 import com.hyperlynx.lost_found.capabilities.WorldInventoryAttacher;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.Tag;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -38,8 +39,8 @@ public class LostFoundMod
     }
 
     private boolean checkItemImportant(ItemStack itemStack){
-        Tag<Item> mustSaveTag = ItemTags.bind("lost_found:must_save");
-        Tag<Item> noSaveTag = ItemTags.bind("lost_found:no_save");
+        TagKey<Item> mustSaveTag = TagKey.create(Registry.ITEM_REGISTRY, new ResourceLocation("lost_found:must_save"));
+        TagKey<Item> noSaveTag = TagKey.create(Registry.ITEM_REGISTRY, new ResourceLocation("lost_found:no_save"));
         return (itemStack.hasCustomHoverName() && ConfigMan.COMMON.protectNamedItems.get()
                 || itemStack.isEnchanted() && ConfigMan.COMMON.protectEnchantedItems.get()
                 || itemStack.is(mustSaveTag)) && !itemStack.is(noSaveTag);
