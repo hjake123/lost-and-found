@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "minecraft:name_tag"
+    "minecraft:name_tag",
+    "minecraft:player_head"
   ]
 }
