@@ -4,6 +4,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 
@@ -16,8 +17,8 @@ public class WorldInventoryImplementation implements IWorldInventory{
     }
 
     @Override
-    public ItemStack popItem() {
-        return world_item_queue.remove();
+    public @Nullable ItemStack popItem() {
+        return world_item_queue.poll();
     }
 
     @Override
