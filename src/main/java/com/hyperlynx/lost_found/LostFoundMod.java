@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.item.ItemExpireEvent;
 import net.minecraftforge.event.entity.player.ItemFishedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -31,6 +32,11 @@ public class LostFoundMod
     public LostFoundMod() {
         MinecraftForge.EVENT_BUS.register(this);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigMan.commonSpec);
+    }
+
+    @SubscribeEvent
+    public void onCommandRegister(RegisterCommandsEvent event){
+        LostFishedCommand.register(event.getDispatcher());
     }
 
     @SubscribeEvent
@@ -57,10 +63,12 @@ public class LostFoundMod
         }
     }
 
-    private void degradeItem(ItemStack in, Random r){
+    private void degradeItem(ItemStack stack, Random r){
         // Hurts damageable items as a penalty for losing them.
-        if (in.isDamageableItem() && r.nextFloat() < ConfigMan.COMMON.itemDamagedChance.get()) {
-            in.hurt(r.nextInt(0, (int)((in.getMaxDamage() - in.getDamageValue()) * ConfigMan.COMMON.itemDamageMultiplier.get())), r, null);
+        if (stack.isDamageableItem() && r.nextFloat() < ConfigMan.COMMON.itemDamagedChance.get()) {
+            if(stack.getMaxDamage() - stack.getDamageValue() == 0)
+                return;
+            stack.hurt(r.nextInt(0, (int)((stack.getMaxDamage() - stack.getDamageValue()) * ConfigMan.COMMON.itemDamageMultiplier.get())), r, null);
         }
     }
 

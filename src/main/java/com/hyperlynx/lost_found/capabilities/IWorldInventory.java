@@ -7,4 +7,7 @@ import net.minecraftforge.common.util.INBTSerializable;
 public interface IWorldInventory extends INBTSerializable<CompoundTag> {
     void addItem(ItemStack i);
     ItemStack popItem();
+    ItemStack peekItem();
+
+    void reset();
 }

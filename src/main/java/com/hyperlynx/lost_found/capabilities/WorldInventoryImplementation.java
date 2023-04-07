@@ -22,6 +22,16 @@ public class WorldInventoryImplementation implements IWorldInventory{
     }
 
     @Override
+    public ItemStack peekItem() {
+        return world_item_queue.peek();
+    }
+
+    @Override
+    public void reset() {
+        world_item_queue.clear();
+    }
+
+    @Override
     public CompoundTag serializeNBT() {
         ListTag item_list_tag = new ListTag();
         int n = world_item_queue.size();
